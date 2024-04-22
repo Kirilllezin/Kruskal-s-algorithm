@@ -1,13 +1,11 @@
-# 1. Класс Graph представляет граф и содержит методы для добавления рёбер, поиска множества элемента и объединения двух множеств.
-# 2. Метод KruskalMST выполняет основной алгоритм Краскала для построения МОД. Он сортирует все рёбра по весу, затем поочерёдно добавляет рёбра в результат, проверяя, не создают ли они цикл в графе.
-# 3. Вспомогательные функции find и union используются для определения корневого узла множества элемента и объединения двух множеств соответственно.
-# 4. В конце выводится информация о рёбрах в построенном МОД и их весе.
-# 5. Код драйвера добавляет несколько рёбер к графу и вызывает метод KruskalMST для построения МОД.
-# Этот алгоритм эффективно находит МОД в связном взвешенном графе.
 from prettytable import PrettyTable
+import networkx as nx
+import matplotlib.pyplot as plt
+
+
 class Graph:
 
-    #Создание графа
+    # Создание графа
     def __init__(self, vertices):
         self.V = vertices  # Количество вершин
         self.graph = []  # Список рёбер графа
@@ -56,7 +54,7 @@ class Graph:
 
         # Сортируем все рёбра по весу в
         # неубывающем порядке
-        self.graph = sorted(self.graph,key=lambda item: item[2])
+        self.graph = sorted(self.graph, key=lambda item: item[2])
 
         parent = []
         rank = []
@@ -85,26 +83,77 @@ class Graph:
                 self.union(parent, rank, x, y)
             # Иначе отбрасываем ребро
 
-        #Сложение веса всех рёбер в новом оставном графе
+        # Сложение веса всех рёбер в новом оставном графе
         minimumCost = 0
         table = PrettyTable()
         table.field_names = ("Вершина 1", "Вершина 2", "Вес ребра")
         for u, v, weight in result:
             minimumCost += weight
-            table.add_row([u,v,weight])
-        print("Вершины минимального оставного дерева","\n", table)
+            table.add_row([u, v, weight])
+        print("Вершины минимального оставного дерева", "\n", table)
         print("Минимальное остовное дерево:", minimumCost)
+
+        # Визуализация исходного графа
+        G_original = nx.Graph()
+        for u, v, weight in self.graph:
+            G_original.add_edge(u, v, weight=weight)
+
+        pos_original = nx.spring_layout(G_original)  # позиции вершин
+
+        # рисуем вершины
+        nx.draw_networkx_nodes(G_original, pos_original, node_size=700, node_color='b')
+
+        # рисуем рёбра
+        nx.draw_networkx_edges(G_original, pos_original, width=2, edge_color='b')
+
+        # подписываем вершины
+        labels_original = nx.get_edge_attributes(G_original, 'weight')
+        nx.draw_networkx_labels(G_original, pos_original)
+        nx.draw_networkx_edge_labels(G_original, pos_original, edge_labels=labels_original)
+
+        plt.title("Исходный граф")
+        plt.axis('off')  # отключаем оси
+        plt.show()
+
+        # Визуализация минимального остовного дерева
+        G_mst = nx.Graph()
+        for u, v, weight in result:
+            G_mst.add_edge(u, v, weight=weight)
+
+        pos_mst = nx.spring_layout(G_mst)  # позиции вершин
+
+        # рисуем вершины
+        nx.draw_networkx_nodes(G_mst, pos_mst, node_size=700, node_color='g')
+
+        # рисуем рёбра
+        nx.draw_networkx_edges(G_mst, pos_mst, width=2, edge_color='g')
+
+        # подписываем вершины
+        labels_mst = nx.get_edge_attributes(G_mst, 'weight')
+        nx.draw_networkx_labels(G_mst, pos_mst)
+        nx.draw_networkx_edge_labels(G_mst, pos_mst, edge_labels=labels_mst)
+
+        plt.title("Минимальное остовное дерево")
+        plt.axis('off')  # отключаем оси
+        plt.show()
 
 
 # Задание графа
 if __name__ == '__main__':
-    g = Graph(4)
+    g = Graph(7)
     g.addEdge(0, 1, 10)
     g.addEdge(0, 2, 6)
     g.addEdge(0, 3, 5)
     g.addEdge(1, 3, 15)
     g.addEdge(2, 3, 4)
+    g.addEdge(5, 6, 19)
+    g.addEdge(6, 0, 2)
+    g.addEdge(5, 4, 1)
+
+    g.addEdge(1, 2, 4)
+    g.addEdge(3, 4, 6)
+    g.addEdge(3, 5, 14)
+    g.addEdge(3, 6, 27)
 
     # Вызов функции
     g.KruskalMST()
-
